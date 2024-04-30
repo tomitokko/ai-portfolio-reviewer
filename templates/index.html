@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>AI Review</title>
+  <!-- <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet"> -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            clifford: '#da373d',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .loader {
+        display: none; /* Loader is hidden by default */
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4f46e5; /* Using Tailwind's indigo-500 color */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .icon-circle {
+      background-color: white;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      cursor: pointer; /* This makes it clear that the icons are clickable */
+    }
+    svg {
+      width: 60px;
+      height: 60px;
+    }    
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <header class="flex justify-between items-center py-4 px-6 bg-white shadow-md">
+    <h1 class="text-xl font-bold">AI Portfolio Review</h1>
+  </header>
+  <main class="container mx-auto py-12 px-6">
+    <div class="flex flex-col space-y-4">
+      <h2 class="text-xl font-bold">Enter your portfolio domain:</h2>
+      <form id="reviewForm">
+        <div class="flex rounded-md shadow-sm overflow-hidden">
+            <input name="domain" type="text" id="domainInput" class="flex-grow px-4 py-2 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:ring-1" placeholder="e.g. example.com">
+            <button type="submit" class="px-4 py-2 text-white bg-indigo-500 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Review</button>
+        </div>
+      </form>
+    </div>
+
+
+    <!-- Rating System Section -->
+    <!-- https://fontawesome.com/icons/thumbs-up?f=classic&s=solid -->
+    <!-- https://fontawesome.com/icons/thumbs-down?s=solid -->
+    <div id="rating_section" style="display: none;" class="flex flex-col items-center mt-10">
+      <h3 class="text-lg font-bold mb-4">Rate The Feedback:</h3>
+      <div class="flex justify-center items-center space-x-8">
+        <div class="flex flex-col items-center justify-center">
+          <!-- Thumbs Up Icon in Circle -->
+          <div onclick="greatFuntcion()" class="icon-circle cursor-pointer">
+            <!-- SVG path for thumbs up -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <!-- SVG path for thumbs up -->
+              <path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"/>
+            </svg>
+          </div>
+          <span class="text-center mt-2">Great</span>
+        </div>
+
+        <div class="flex flex-col items-center justify-center">
+          <!-- Thumbs Down Icon in Circle -->
+          <div onclick="poorFuntcion()" class="icon-circle cursor-pointer">
+            <!-- SVG path for thumbs down -->
+            <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M313.4 479.1c26-5.2 42.9-30.5 37.7-56.5l-2.3-11.4c-5.3-26.7-15.1-52.1-28.8-75.2H464c26.5 0 48-21.5 48-48c0-18.5-10.5-34.6-25.9-42.6C497 236.6 504 223.1 504 208c0-23.4-16.8-42.9-38.9-47.1c4.4-7.3 6.9-15.8 6.9-24.9c0-21.3-13.9-39.4-33.1-45.6c.7-3.3 1.1-6.8 1.1-10.4c0-26.5-21.5-48-48-48H294.5c-19 0-37.5 5.6-53.3 16.1L202.7 73.8C176 91.6 160 121.6 160 153.7V192v48 24.9c0 29.2 13.3 56.7 36 75l7.4 5.9c26.5 21.2 44.6 51 51.2 84.2l2.3 11.4c5.2 26 30.5 42.9 56.5 37.7zM32 384H96c17.7 0 32-14.3 32-32V128c0-17.7-14.3-32-32-32H32C14.3 96 0 110.3 0 128V352c0 17.7 14.3 32 32 32z"/></svg>
+          </div>
+          <span class="text-center mt-2">Poor</span>
+        </div>
+      </div>
+      <h3 id="success_text" style="display: none; color:green;" class="text-lg font-bold mb-4">
+        <div align="center">Thanks for rating</div>
+      </h3>
+    </div>
+    
+
+    <div class="loader" id="loader"></div>
+    <div id="reviewResult" class="hidden mt-6"></div>
+  </main>
+  <script>
+    var review_id = "";
+
+    document.getElementById('reviewForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const domain = document.getElementById('domainInput').value;
+        if (!domain) {
+            alert('Please enter your portfolio site domain');
+            return;
+        }
+
+        const loader = document.getElementById('loader');
+        const reviewResult = document.getElementById('reviewResult');
+        loader.style.display = "block";
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch('submit-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+          body: JSON.stringify({ domain: domain })
+        })
+        .then(response => response.json())
+        .then(data => {
+              reviewResult.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-1">
+                  <h3 class="text-lg font-bold">Portfolio Feedback:</h3>
+                  <textarea readonly class="w-full p-2 border border-gray-300" style="height: calc(100% - 1rem);">${data.website_review}</textarea>
+                </div>
+                <div class="md:col-span-1 flex justify-center md:justify-end">
+                  <div class="w-full max-w-md">
+                    <h3 class="text-lg font-bold">Screenshot:</h3>
+                    <img src="${data.website_screenshot}" alt="Website Screenshot" class="mt-2" style="width: 100%; height: auto;" />
+                  </div>
+                </div>
+              </div>
+            `;
+            reviewResult.classList.remove('hidden');
+            review_id = data.review_id;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            loader.style.display = "none";
+            const rating_section = document.getElementById('rating_section');
+            rating_section.style.display = "block";
+        });
+    });
+
+    function greatFuntcion() {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      fetch('/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ id: review_id, type: 'great' })
+      })
+      .then(response => response.json())
+      .then(data => {
+          const sucess_text = document.getElementById('success_text');
+          sucess_text.style.display = "block";
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      })
+    }
+
+    function poorFuntcion() {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      fetch('/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ id: review_id, type: 'poor' })
+      })
+      .then(response => response.json())
+      .then(data => {
+          const sucess_text = document.getElementById('success_text');
+          sucess_text.style.display = "block";
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      })
+    }
+
+  </script>
+</body>
+</html>
+
